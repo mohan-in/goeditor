@@ -1,0 +1,65 @@
+<html>
+
+<head>
+	<title>GoEditor</title>
+
+	<script src="codemirror/lib/codemirror.js"></script>
+	<script src="codemirror/mode/go/go.js"></script>
+
+	<link rel="stylesheet" href="codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="codemirror/theme/elegant.css">
+	<style>
+		
+		body {
+			margin:0px;
+			padding:0px;
+			overflow: hidden;
+		}
+
+		#header {
+			height: 50px;
+			width: 100%;
+			background: lightblue;
+		}
+
+		#title {
+			padding-top: 15px;
+			padding-left: 25px;
+			font-size: 18px;
+			font-weight: bold;
+			font-family: "RobotoDraft"
+		}
+
+		.CodeMirror {
+        	height: 100%;
+        	width:100%;
+    	}
+	</style>
+
+</head>
+
+<body>
+
+	<div id="header">
+		<div id="title">Go Editor</div>
+	</div>
+
+	<textarea id="editor"></textarea>
+
+	<script>
+		var editor = CodeMirror.fromTextArea(document.querySelector('#editor'), {
+			theme: "elegant",
+			lineNumbers: true,
+			matchBrackets: true,
+			indentUnit: 8,
+			tabSize: 8,
+			indentWithTabs: true,
+			mode: "go"
+		});
+
+	</script>
+
+</body>
+
+
+</html>
