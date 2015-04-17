@@ -10,3 +10,15 @@ var editor = CodeMirror.fromTextArea(document.querySelector('#editor'), {
 	autofocus: true
 });
 
+document.querySelector('#btn-dir').addEventListener('click', function() {
+	editor.focus();
+});
+
+document.querySelector('#btn-save').addEventListener('click', function() {
+	editor.focus();
+});
+
+document.querySelector('#btn-fmt').addEventListener('click', function() {
+	editor.focus();
+});
+
