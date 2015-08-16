@@ -1,73 +1,17 @@
 <html>
+	<head>
+		<title>GoEditor</title>
 
-<head>
-	<title>GoEditor</title>
+		<link rel="import" href="/static/go-editor.html"></link>
 
-	<link rel="stylesheet" href="static/codemirror/lib/codemirror.css">
-	<link rel="stylesheet" href="static/codemirror/theme/elegant.css">
-	<link rel="stylesheet" href="static/bootstrap/css/bootstrap.css">
-	<link rel="stylesheet" href="static/css/simple-sidebar.css">
-	<link rel="stylesheet" href="static/css/bootstrap-treeview.css">
-	<link rel="stylesheet" href="static/css/app.css">
-
-</head>
-
-<body>
-
-	<div id="wrapper">
-
-		<div id="sidebar-wrapper">
-			<nav class="navbar navbar-default">
-				<div class="container-fluid">
-					<div class="navbar-header">
-						<a class="navbar-brand" href="#">Project name</a>
-					</div>
-				</div>
-			</nav>
-
-			<div id="dir-tree"></div>
-		</div>
-
-		<div id="page-content-wrapper">
-
-			<!-- header -->
-			<nav class="navbar navbar-default">
-				<div class="container-fluid">
-					<div class="navbar-header">
-						<a class="navbar-brand" href="#">Go Editor</a>
-					</div>
-					<div class="btn-group" role="group">
-						<button type="button" class="btn btn-default navbar-btn" id="btn-dir">
-							<span class="glyphicon glyphicon-folder-open"></span> Dir
-						</button>
-						<button type="button" class="btn btn-default navbar-btn" id="btn-save">
-							<span class="glyphicon glyphicon-floppy-disk"></span> Save
-						</button>
-						<button type="button" class="btn btn-default navbar-btn" id="btn-fmt">
-							<span class="glyphicon glyphicon-indent-left"></span> Fmt
-						</button>
-					</div>
-
-					<div class="btn-group" role="group" id="btn-files">
-						<button type="button" class="btn btn-primary" id="a-go">a.go</button>
-						<button type="button" class="btn btn-default" id="b-go">b.go</button>
-						<button type="button" class="btn btn-default" id="c-go">c.go</button>
-					</div>
-				</div>
-			</nav>
-
-			<textarea id="editor"></textarea>
-
-		</div>
-
-	</div>
-
-	<script src="static/codemirror/lib/codemirror.js"></script>
-	<script src="static/codemirror/mode/go/go.js"></script>
-	<script src="static/js/jquery.js"></script>
-	<script src="static/js/bootstrap-treeview.js"></script>
-	<script src="static/js/app.js"></script>
-</body>
-
-
+		<style>
+			body {
+			    margin: 0;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<go-editor></go-editor>
+	</body>
 </html>
