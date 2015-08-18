@@ -106,8 +106,27 @@
 					//list autocompleton when . is typed
 					editor.getSession().on('change', function(e) {
 						if(e.action == 'insert' && e.lines[0] == '.') {
-							console.log('.  typed');
-							//console.log(editor.getSession().getDocument().positionToIndex(pos,  0));
+							var offset = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition(),  0);
+							console.log(offset);
+							
+							that = this;
+							var xhr = new XMLHttpRequest();
+    						xhr.onreadystatechange = function() {
+	        					if (xhr.readyState == XMLHttpRequest.DONE) {
+	           						if(xhr.status == 200){
+	               						that.$.fileSavedToast.show();
+	           						} else {
+	           							alert('unable to autocomplete');
+	           						}
+	        					}
+    						}
+
+	    					var data = new FormData();
+							data.append('content', editor.getValue());
+							data.append('offset', offset);
+
+							xhr.open('POST', '/autocomplete');
+							xhr.send(data);
 						}
 					});
 				}

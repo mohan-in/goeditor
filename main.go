@@ -59,11 +59,23 @@ func saveHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
+	content := req.FormValue("content")
+	offset := req.FormValue("offset")
+
+	result := autoComplete([]byte(content), offset)
+
+	for _, s := range result {
+		logger.Println(s)
+	}
+}
+
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/dir", dirHandler)
 	http.HandleFunc("/static/", staticFilesHandler)
 	http.HandleFunc("/src/", goFileHandler)
 	http.HandleFunc("/save", saveHandler)
+	http.HandleFunc("/autocomplete", autocompleteHandler)
 	http.ListenAndServe(":9090", nil)
 }
