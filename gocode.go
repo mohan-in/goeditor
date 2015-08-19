@@ -7,7 +7,7 @@ import (
 )
 
 func autoComplete(file []byte, offset string) []string {
-	cmd := exec.Command("C:\\wrk\\bin\\gocode.exe", "autocomplete", offset)
+	cmd := exec.Command("C:\\wrk\\bin\\gocode.exe", "autocomplete", "c"+offset)
 
 	cmd.Stdin = bytes.NewReader(file)
 

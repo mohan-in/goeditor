@@ -8,6 +8,7 @@
 <link rel="import" href="/static/bower_components/paper-input/paper-input.html">
 <link rel="import" href="/static/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/static/bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="/static/bower_components/iron-dropdown/iron-dropdown.html">
 
 <link rel="import" href="/static/bower_components/paper-styles/paper-styles.html">
 
@@ -32,6 +33,15 @@
 
 		paper-toast {
 			margin-left: 50px;
+		}
+
+		ul
+		{
+    		list-style-type: none;
+		}
+
+		a:hover {
+			cursor: pointer;
 		}
 	}
 	</style>
@@ -60,6 +70,14 @@
 
 					<div id="content" class="fit"></div>
 
+					<iron-dropdown id="autocomplete" horizontal-align="left" vertical-align="top">
+						<ul class="dropdown-content">
+						    <template is="dom-repeat" items="{{autocompleteCandidates}}">
+        						<li><a>{{item}}<a></li>
+    						</template>
+						</ul>
+					</iron-dropdown>
+
 					<paper-dialog id="fileNameInput">
 						<div>
 							<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
@@ -83,7 +101,8 @@
 			properties: {
 				fileName: String,
 				cursorRow: Number,
-				cursorColumn: Number
+				cursorColumn: Number,
+				autocompleteCandidates: Array
 			},
 
 			ready: function() {
@@ -106,15 +125,20 @@
 					//list autocompleton when . is typed
 					editor.getSession().on('change', function(e) {
 						if(e.action == 'insert' && e.lines[0] == '.') {
-							var offset = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition(),  0);
-							console.log(offset);
+							var position = editor.getCursorPosition();
+							var offset = editor.getSession().getDocument().positionToIndex(position,  0) + 1;
 							
-							that = this;
 							var xhr = new XMLHttpRequest();
     						xhr.onreadystatechange = function() {
 	        					if (xhr.readyState == XMLHttpRequest.DONE) {
 	           						if(xhr.status == 200){
-	               						that.$.fileSavedToast.show();
+	               						var response = JSON.parse(xhr.response);
+	               						that.autocompleteCandidates = response.Candidates;
+	               						var pixelCoordinates = editor.renderer.textToScreenCoordinates(position);
+	               						that.$.autocomplete.horizontalOffset = pixelCoordinates.pageX;
+	               						that.$.autocomplete.verticalOffset = pixelCoordinates.pageY;
+	               						console.log(pixelCoordinates);
+	               						that.$.autocomplete.open();
 	           						} else {
 	           							alert('unable to autocomplete');
 	           						}

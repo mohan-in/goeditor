@@ -65,9 +65,16 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 
 	result := autoComplete([]byte(content), offset)
 
-	for _, s := range result {
-		logger.Println(s)
+	type response struct {
+		Candidates []string
 	}
+
+	res := &response{}
+	for _, s := range result {
+		res.Candidates = append(res.Candidates, s)
+	}
+	buf, _ := json.Marshal(res)
+	rw.Write(buf)
 }
 
 func main() {
