@@ -8,7 +8,8 @@
 <link rel="import" href="/static/bower_components/paper-input/paper-input.html">
 <link rel="import" href="/static/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/static/bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="/static/bower_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="/static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="/static/bower_components/paper-menu/paper-menu.html">
 
 <link rel="import" href="/static/bower_components/paper-styles/paper-styles.html">
 
@@ -40,17 +41,17 @@
     		list-style-type: none;
 		}
 
-		a:hover {
-			cursor: pointer;
-		}
+		#autocomplete {
+			visibility: hidden;
+		}	
 	}
 	</style>
 
 	<template>
 		<div id="container" fullbleed layout vertical>
-			<paper-drawer-panel force-narrow id="drawer">
+			<paper-drawer-panel force-narrow id="drawer" on-iron-select="resizeEditor">
 
-				<paper-header-panel drawer>
+				<paper-header-panel id="drawer" drawer>
 					<paper-toolbar></paper-toolbar>
     				<div class="fit">content fits 100% below the header</div>
 				</paper-header-panel>
@@ -70,13 +71,13 @@
 
 					<div id="content" class="fit"></div>
 
-					<iron-dropdown id="autocomplete" horizontal-align="left" vertical-align="top">
-						<ul class="dropdown-content">
-						    <template is="dom-repeat" items="{{autocompleteCandidates}}">
-        						<li><a>{{item}}<a></li>
-    						</template>
-						</ul>
-					</iron-dropdown>
+					<paper-dropdown-menu no-animations id="autocomplete" on-paper-dropdown-close="closeAutocomplete">
+						<paper-menu class="dropdown-content">
+							<template is="dom-repeat" items="[[autocompleteCandidates]]">
+								<paper-item on-click="autocomplete">[[item]]</paper-item><br/>
+							</template>
+						</paper-menu>
+					</paper-dropdown-menu>
 
 					<paper-dialog id="fileNameInput">
 						<div>
@@ -135,10 +136,11 @@
 	               						var response = JSON.parse(xhr.response);
 	               						that.autocompleteCandidates = response.Candidates;
 	               						var pixelCoordinates = editor.renderer.textToScreenCoordinates(position);
-	               						that.$.autocomplete.horizontalOffset = pixelCoordinates.pageX;
-	               						that.$.autocomplete.verticalOffset = pixelCoordinates.pageY;
 	               						console.log(pixelCoordinates);
+	               						that.$.autocomplete.style.left = pixelCoordinates.pageX + 100;
+	               						that.$.autocomplete.style.top = pixelCoordinates.pageY - 64;
 	               						that.$.autocomplete.open();
+	               						that.$.autocomplete.style.visibility = "visible";
 	           						} else {
 	           							alert('unable to autocomplete');
 	           						}
@@ -210,6 +212,21 @@
 
 			toggleDrawer: function() {
 				this.$.drawer.togglePanel();
+			},
+
+			autocomplete: function(e) {
+				var candidate = e.target.innerText;
+				autocomplete.close();
+				editor.getSession().getDocument().insert(editor.getCursorPosition(), candidate);
+			},
+
+			closeAutocomplete: function() {
+				this.$.autocomplete.style.visibility = "hidden";
+			},
+
+			resizeEditor: function() {
+				console.log('asdfasdf');
+				this.$.content.style.marginLeft = "300";
 			}
 		});	
 	</script>

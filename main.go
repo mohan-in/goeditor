@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -70,9 +71,11 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	res := &response{}
-	for _, s := range result {
-		res.Candidates = append(res.Candidates, s)
+
+	for i := 1; i < len(result); i++ {
+		res.Candidates = append(res.Candidates, strings.TrimSpace(result[i])
 	}
+
 	buf, _ := json.Marshal(res)
 	rw.Write(buf)
 }
