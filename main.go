@@ -28,7 +28,7 @@ func homeHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func dirHandler(rw http.ResponseWriter, r *http.Request) {
-	dir := ReadDir(r.FormValue("dir"))
+	dir := ReadDir(GoPath + "/bin")
 
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(dir); err != nil {
@@ -73,7 +73,7 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 	res := &response{}
 
 	for i := 1; i < len(result); i++ {
-		res.Candidates = append(res.Candidates, strings.TrimSpace(result[i])
+		res.Candidates = append(res.Candidates, strings.TrimSpace(result[i]))
 	}
 
 	buf, _ := json.Marshal(res)

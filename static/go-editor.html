@@ -36,8 +36,7 @@
 			margin-left: 50px;
 		}
 
-		ul
-		{
+		ul {
     		list-style-type: none;
 		}
 
@@ -53,7 +52,11 @@
 
 				<paper-header-panel id="drawer" drawer>
 					<paper-toolbar></paper-toolbar>
-    				<div class="fit">content fits 100% below the header</div>
+    				<div class="fit">
+    					<template is="dom-repeat" items="[[directory]]">
+							<paper-item>[[item.Name]]</paper-item><br/>
+						</template>
+    				</div>
 				</paper-header-panel>
 
 				<paper-header-panel main>
@@ -64,9 +67,9 @@
 						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
 						<span/></span>
 						<div class="title">Go Editor</div>
-						<span>{{cursorRow}}</span>
+						<span>[[cursorRow]]</span>
 						<span>:</span>
-						<span>{{cursorColumn}}</span>
+						<span>[[cursorColumn]]</span>
 					</paper-toolbar>
 
 					<div id="content" class="fit"></div>
@@ -103,7 +106,8 @@
 				fileName: String,
 				cursorRow: Number,
 				cursorColumn: Number,
-				autocompleteCandidates: Array
+				autocompleteCandidates: Array,
+				directory: Object
 			},
 
 			ready: function() {
@@ -176,6 +180,20 @@
 				xhr.open('POST', this.fileName);
 				xhr.send();
 
+				//load sidebar
+				var dirXhr = new XMLHttpRequest();
+    			dirXhr.onreadystatechange = function() {
+        			if (dirXhr.readyState == XMLHttpRequest.DONE) {
+           				if(dirXhr.status == 200){
+           					console.log(dirXhr.response);
+               				this.directory = dirXhr.response;
+           				}
+        			}
+    			}
+				dirXhr.open('GET', '/dir');
+				dirXhr.send();
+
+
 				//focus the editor
 				editor.focus();
 			},
@@ -221,12 +239,15 @@
 			},
 
 			closeAutocomplete: function() {
-				this.$.autocomplete.style.visibility = "hidden";
+				this.$.autocomplete.style.visibility = 'hidden';
 			},
 
-			resizeEditor: function() {
-				console.log('asdfasdf');
-				this.$.content.style.marginLeft = "300";
+			resizeEditor: function(e) {
+				if(this.$.drawer.selected == 'drawer') {
+					this.$.content.style.marginLeft = this.$.drawer.drawerWidth;
+				} else {
+					this.$.content.style.marginLeft = '0';
+				}
 			}
 		});	
 	</script>
