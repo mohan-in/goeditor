@@ -1,0 +1,44 @@
+<link rel="import" href="/static/bower_components/polymer/polymer.html">
+<link rel="import" href="/static/bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="/static/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/static/bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="tree-view">
+	<style>
+		#child {
+			padding-left: 10px;
+		}
+		iron-icon {
+			margin-right: 5px;
+			color: #3f51b5;
+		}
+		.file {
+			padding-bottom: 10px;
+			cursor: pointer;
+		}
+	</style>
+
+	<template>
+		<div class="file" on-click="toggle"><iron-icon icon="folder"></iron-icon>[[data.Name]]</div>
+
+		<div id="child">
+			<iron-collapse id="collapse"  opened>
+				<template is="dom-repeat" items="[[data.Files]]">
+					<div class="file"><iron-icon icon="description"></iron-icon>[[item]]</div>
+				</template>
+			</iron-collapse>
+
+			<template is="dom-repeat" items="[[data.Dirs]]">
+				<tree-view data=[[item]]></tree-view>
+			</template>
+		</div>
+	</template>
+
+	<script>
+		Polymer({
+			toggle: function() {
+				this.$.collapse.toggle();
+			}
+		});
+	</script>
+</dom-module>

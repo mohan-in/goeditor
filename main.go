@@ -28,7 +28,7 @@ func homeHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func dirHandler(rw http.ResponseWriter, r *http.Request) {
-	dir := ReadDir(GoPath + "/bin")
+	dir := ReadDir(GoPath + "/src/github.com/gocode")
 
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(dir); err != nil {

@@ -11,7 +11,7 @@
 <link rel="import" href="/static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="/static/bower_components/paper-menu/paper-menu.html">
 
-<link rel="import" href="/static/bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="/static/tree-view.html">
 
 <script src="/static/ace-builds/src-noconflict/ace.js"></script>
 <script src="/static/ajax.js"></script>
@@ -42,7 +42,7 @@
 
 		#autocomplete {
 			visibility: hidden;
-		}	
+		}
 	}
 	</style>
 
@@ -51,11 +51,10 @@
 			<paper-drawer-panel force-narrow id="drawer" on-iron-select="resizeEditor">
 
 				<paper-header-panel id="drawer" drawer>
-					<paper-toolbar></paper-toolbar>
+					<paper-toolbar>
+					</paper-toolbar>
     				<div class="fit">
-    					<template is="dom-repeat" items="[[directory]]">
-							<paper-item>[[item.Name]]</paper-item><br/>
-						</template>
+    					<tree-view data="[[directory]]"></tree-view>
     				</div>
 				</paper-header-panel>
 
@@ -186,7 +185,7 @@
         			if (dirXhr.readyState == XMLHttpRequest.DONE) {
            				if(dirXhr.status == 200){
            					console.log(dirXhr.response);
-               				this.directory = dirXhr.response;
+               				that.directory = JSON.parse(dirXhr.response);
            				}
         			}
     			}
@@ -244,6 +243,8 @@
 
 			resizeEditor: function(e) {
 				if(this.$.drawer.selected == 'drawer') {
+					this.$.content.style.webkitTransitionDuration = "0.4s";
+    				this.$.content.style.webkitTransitionTimingFunction = "ease-out";
 					this.$.content.style.marginLeft = this.$.drawer.drawerWidth;
 				} else {
 					this.$.content.style.marginLeft = '0';
