@@ -99,7 +99,55 @@
 
 	<script>
 		var editor;
-		var initEditor;
+
+		function initEditor(that) {
+			//setup editor
+			editor = ace.edit(that.$.content);
+			editor.setTheme("ace/theme/chrome");
+			editor.getSession().setMode("ace/mode/golang");
+			editor.getSession().setTabSize(4);
+			
+			//track cursor position to be printed on toolbar
+			editor.getSession().selection.on('changeCursor', function(e) {
+				var pos = editor.getCursorPosition();
+				that.cursorRow = pos.row;
+				that.cursorColumn = pos.column;
+			});
+
+			//list autocompleton when . is typed
+			editor.getSession().on('change', function(e) {
+				if(e.action == 'insert' && e.lines[0] == '.') {
+					var position = editor.getCursorPosition();
+					var offset = editor.getSession().getDocument().positionToIndex(position,  0) + 1;
+					
+					var xhr = new XMLHttpRequest();
+					xhr.onreadystatechange = function() {
+    					if (xhr.readyState == XMLHttpRequest.DONE) {
+       						if(xhr.status == 200){
+           						var response = JSON.parse(xhr.response);
+           						that.autocompleteCandidates = response.Candidates;
+           						var pixelCoordinates = editor.renderer.textToScreenCoordinates(position);
+           						console.log(pixelCoordinates);
+           						that.$.autocomplete.style.left = pixelCoordinates.pageX + 100;
+           						that.$.autocomplete.style.top = pixelCoordinates.pageY - 64;
+           						that.$.autocomplete.open();
+           						that.$.autocomplete.style.visibility = "visible";
+       						} else {
+       							alert('unable to autocomplete');
+       						}
+    					}
+					}
+
+					var data = new FormData();
+					data.append('content', editor.getValue());
+					data.append('offset', offset);
+
+					xhr.open('POST', '/autocomplete');
+					xhr.send(data);
+				}
+			});
+		}
+
 		Polymer({
 			properties: {
 				fileName: String,
@@ -112,60 +160,12 @@
 			ready: function() {
 				var that = this;
 
-				initEditor = function() {
-					//setup editor
-					editor = ace.edit(that.$.content);
-					editor.setTheme("ace/theme/chrome");
-					editor.getSession().setMode("ace/mode/golang");
-					editor.getSession().setTabSize(4);
-					
-					//track cursor position to be printed on toolbar
-					editor.getSession().selection.on('changeCursor', function(e) {
-						var pos = editor.getCursorPosition();
-						that.cursorRow = pos.row;
-						that.cursorColumn = pos.column;
-					});
-
-					//list autocompleton when . is typed
-					editor.getSession().on('change', function(e) {
-						if(e.action == 'insert' && e.lines[0] == '.') {
-							var position = editor.getCursorPosition();
-							var offset = editor.getSession().getDocument().positionToIndex(position,  0) + 1;
-							
-							var xhr = new XMLHttpRequest();
-    						xhr.onreadystatechange = function() {
-	        					if (xhr.readyState == XMLHttpRequest.DONE) {
-	           						if(xhr.status == 200){
-	               						var response = JSON.parse(xhr.response);
-	               						that.autocompleteCandidates = response.Candidates;
-	               						var pixelCoordinates = editor.renderer.textToScreenCoordinates(position);
-	               						console.log(pixelCoordinates);
-	               						that.$.autocomplete.style.left = pixelCoordinates.pageX + 100;
-	               						that.$.autocomplete.style.top = pixelCoordinates.pageY - 64;
-	               						that.$.autocomplete.open();
-	               						that.$.autocomplete.style.visibility = "visible";
-	           						} else {
-	           							alert('unable to autocomplete');
-	           						}
-	        					}
-    						}
-
-	    					var data = new FormData();
-							data.append('content', editor.getValue());
-							data.append('offset', offset);
-
-							xhr.open('POST', '/autocomplete');
-							xhr.send(data);
-						}
-					});
-				}
-
 				this.fileName = document.location.pathname;
 				if(this.fileName == '/') {
 					return;
 				} 
 
-				initEditor();
+				initEditor(this);
 
 				//load code page
 				var xhr = new XMLHttpRequest();
@@ -184,7 +184,6 @@
     			dirXhr.onreadystatechange = function() {
         			if (dirXhr.readyState == XMLHttpRequest.DONE) {
            				if(dirXhr.status == 200){
-           					console.log(dirXhr.response);
                				that.directory = JSON.parse(dirXhr.response);
            				}
         			}
@@ -192,13 +191,12 @@
 				dirXhr.open('GET', '/dir');
 				dirXhr.send();
 
-
 				//focus the editor
 				editor.focus();
 			},
 
 			save: function() {
-				that = this;
+				var that = this;
 				var xhr = new XMLHttpRequest();
     			xhr.onreadystatechange = function() {
         			if (xhr.readyState == XMLHttpRequest.DONE) {

@@ -9,8 +9,13 @@ import (
 type Dir struct {
 	Name  string
 	Path  string
-	Files []string
+	Files []File
 	Dirs  []Dir
+}
+
+type File struct {
+	Name string
+	Path string
 }
 
 var IgnoreDirs = []string{".git", "bower_components", "ace-builds", ".files"}
@@ -46,7 +51,7 @@ func populate(c chan Dir, d Dir) {
 			go populate(cc, dir)
 			j++
 		} else {
-			d.Files = append(d.Files, file.Name())
+			d.Files = append(d.Files, File{Name: file.Name(), Path: strings.TrimPrefix(d.Path, GoPath) + "/" + file.Name()})
 		}
 	}
 

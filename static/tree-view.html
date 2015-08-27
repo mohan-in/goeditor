@@ -13,6 +13,7 @@
 			color: #3f51b5;
 		}
 		.file {
+			display: block;
 			padding-bottom: 10px;
 			cursor: pointer;
 		}
@@ -24,13 +25,14 @@
 		<div id="child">
 			<iron-collapse id="collapse"  opened>
 				<template is="dom-repeat" items="[[data.Files]]">
-					<div class="file"><iron-icon icon="description"></iron-icon>[[item]]</div>
+					<a class="file" target="_blank" href="[[item.Path]]">
+						<iron-icon icon="description"></iron-icon>[[item.Name]]</a>
+				</template>
+
+				<template is="dom-repeat" items="[[data.Dirs]]">
+					<tree-view data="[[item]]"></tree-view>
 				</template>
 			</iron-collapse>
-
-			<template is="dom-repeat" items="[[data.Dirs]]">
-				<tree-view data=[[item]]></tree-view>
-			</template>
 		</div>
 	</template>
 
