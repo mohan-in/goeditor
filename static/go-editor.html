@@ -8,21 +8,19 @@
 <link rel="import" href="/static/bower_components/paper-input/paper-input.html">
 <link rel="import" href="/static/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/static/bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="/static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="/static/bower_components/paper-menu/paper-menu.html">
 
 <link rel="import" href="/static/tree-view.html">
 
 <script src="/static/ace-builds/src-noconflict/ace.js"></script>
 <script src="/static/ace-builds/src-noconflict/ext-language_tools.js"></script>
 
-<script src="/static/ajax.js"></script>
-
 <dom-module id="go-editor">
 
 	<style is="custom-style">
 		#content {
 			font-size: 15px;
+			transition-duration: 400ms;
+			transition-timing-function: ease-out;
 		}
 
 		paper-button {
@@ -80,7 +78,7 @@
 							<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
 						</div>
 						<div class="buttons">
-							<paper-button dialog-confirm on-click="setFileName">Accept</paper-button>
+							<paper-button dialog-confirm on-click="setFileName">OK</paper-button>
 						</div>
 					</paper-dialog>
 
@@ -226,8 +224,6 @@
 
 			resizeEditor: function(e) {
 				if(this.$.drawer.selected == 'drawer') {
-					this.$.content.style.webkitTransitionDuration = "0.4s";
-    				this.$.content.style.webkitTransitionTimingFunction = "ease-out";
 					this.$.content.style.marginLeft = this.$.drawer.drawerWidth;
 				} else {
 					this.$.content.style.marginLeft = '0';

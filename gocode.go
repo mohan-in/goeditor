@@ -18,7 +18,7 @@ type Candidate struct {
 }
 
 func autoComplete(file []byte, offset string) *AutocompleteResponse {
-	cmd := exec.Command(goPath, "-f=json", "autocomplete", "c"+offset)
+	cmd := exec.Command(gocodePath, "-f=json", "autocomplete", "c"+offset)
 
 	cmd.Stdin = bytes.NewReader(file)
 
@@ -36,6 +36,11 @@ func autoComplete(file []byte, offset string) *AutocompleteResponse {
 
 	var v []interface{}
 	json.Unmarshal(buf, &v)
+
+	if len(v) == 0 {
+		return nil
+	}
+
 	candidates := v[1].([]interface{})
 
 	for _, gc := range candidates {
