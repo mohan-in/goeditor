@@ -7,12 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
 var (
-	logger *log.Logger
-	GoPath = "C:/wrk"
+	logger     *log.Logger
+	goPath     = "C:/wrk"
+	gocodePath = "C:/wrk/bin/gocode.exe"
 )
 
 func init() {
@@ -28,7 +28,7 @@ func homeHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func dirHandler(rw http.ResponseWriter, r *http.Request) {
-	dir := ReadDir(GoPath + "/src/github.com/gocode")
+	dir := ReadDir(goPath + "/src/github.com/gocode")
 
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(dir); err != nil {
@@ -38,7 +38,7 @@ func dirHandler(rw http.ResponseWriter, r *http.Request) {
 
 func goFileHandler(rw http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
-		buf, err := ioutil.ReadFile(GoPath + req.URL.Path)
+		buf, err := ioutil.ReadFile(goPath + req.URL.Path)
 		if err != nil {
 			logger.Println(err)
 			rw.WriteHeader(http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func saveHandler(rw http.ResponseWriter, req *http.Request) {
 	name := req.FormValue("name")
 	content := req.FormValue("content")
 
-	err := ioutil.WriteFile(GoPath+name, []byte(content), os.ModePerm)
+	err := ioutil.WriteFile(goPath+name, []byte(content), os.ModePerm)
 	if err != nil {
 		logger.Println(err)
 	}
@@ -66,17 +66,7 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 
 	result := autoComplete([]byte(content), offset)
 
-	type response struct {
-		Candidates []string
-	}
-
-	res := &response{}
-
-	for i := 1; i < len(result); i++ {
-		res.Candidates = append(res.Candidates, strings.TrimSpace(result[i]))
-	}
-
-	buf, _ := json.Marshal(res)
+	buf, _ := json.Marshal(result)
 	rw.Write(buf)
 }
 

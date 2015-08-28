@@ -18,7 +18,7 @@ type File struct {
 	Path string
 }
 
-var IgnoreDirs = []string{".git", "bower_components", "ace-builds", ".files"}
+var ignoreDirs = []string{".git", "bower_components", "ace-builds", ".files"}
 
 func ReadDir(name string) Dir {
 	p := strings.Split(name, "/")
@@ -51,7 +51,8 @@ func populate(c chan Dir, d Dir) {
 			go populate(cc, dir)
 			j++
 		} else {
-			d.Files = append(d.Files, File{Name: file.Name(), Path: strings.TrimPrefix(d.Path, GoPath) + "/" + file.Name()})
+			f := File{Name: file.Name(), Path: strings.TrimPrefix(d.Path, goPath) + "/" + file.Name()}
+			d.Files = append(d.Files, f)
 		}
 	}
 
@@ -64,7 +65,7 @@ func populate(c chan Dir, d Dir) {
 }
 
 func isIgnoreFile(name string) bool {
-	for _, n := range IgnoreDirs {
+	for _, n := range ignoreDirs {
 		if n == name {
 			return true
 		}

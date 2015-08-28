@@ -14,6 +14,8 @@
 <link rel="import" href="/static/tree-view.html">
 
 <script src="/static/ace-builds/src-noconflict/ace.js"></script>
+<script src="/static/ace-builds/src-noconflict/ext-language_tools.js"></script>
+
 <script src="/static/ajax.js"></script>
 
 <dom-module id="go-editor">
@@ -73,14 +75,6 @@
 
 					<div id="content" class="fit"></div>
 
-					<paper-dropdown-menu no-animations id="autocomplete" on-paper-dropdown-close="closeAutocomplete">
-						<paper-menu class="dropdown-content">
-							<template is="dom-repeat" items="[[autocompleteCandidates]]">
-								<paper-item on-click="autocomplete">[[item]]</paper-item><br/>
-							</template>
-						</paper-menu>
-					</paper-dropdown-menu>
-
 					<paper-dialog id="fileNameInput">
 						<div>
 							<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
@@ -102,36 +96,28 @@
 
 		function initEditor(that) {
 			//setup editor
+			var langTools = ace.require("ace/ext/language_tools");
 			editor = ace.edit(that.$.content);
 			editor.setTheme("ace/theme/chrome");
 			editor.getSession().setMode("ace/mode/golang");
 			editor.getSession().setTabSize(4);
-			
-			//track cursor position to be printed on toolbar
-			editor.getSession().selection.on('changeCursor', function(e) {
-				var pos = editor.getCursorPosition();
-				that.cursorRow = pos.row;
-				that.cursorColumn = pos.column;
-			});
 
-			//list autocompleton when . is typed
-			editor.getSession().on('change', function(e) {
-				if(e.action == 'insert' && e.lines[0] == '.') {
-					var position = editor.getCursorPosition();
-					var offset = editor.getSession().getDocument().positionToIndex(position,  0) + 1;
-					
+			// enable autocompletion and snippets
+			editor.setOptions({
+				enableBasicAutocompletion: true,
+				enableSnippets: true,
+				enableLiveAutocompletion: false
+			});
+			
+			var gocodeCompleter = {
+				getCompletions: function(editor, session, pos, prefix, callback) {
+					var offset = editor.getSession().getDocument().positionToIndex(pos,  0) + 1;
+
 					var xhr = new XMLHttpRequest();
 					xhr.onreadystatechange = function() {
     					if (xhr.readyState == XMLHttpRequest.DONE) {
        						if(xhr.status == 200){
-           						var response = JSON.parse(xhr.response);
-           						that.autocompleteCandidates = response.Candidates;
-           						var pixelCoordinates = editor.renderer.textToScreenCoordinates(position);
-           						console.log(pixelCoordinates);
-           						that.$.autocomplete.style.left = pixelCoordinates.pageX + 100;
-           						that.$.autocomplete.style.top = pixelCoordinates.pageY - 64;
-           						that.$.autocomplete.open();
-           						that.$.autocomplete.style.visibility = "visible";
+           						callback(null, JSON.parse(xhr.response).Candidates)
        						} else {
        							alert('unable to autocomplete');
        						}
@@ -145,6 +131,15 @@
 					xhr.open('POST', '/autocomplete');
 					xhr.send(data);
 				}
+			}
+
+			editor.completers = [gocodeCompleter]
+
+			//track cursor position to be printed on toolbar
+			editor.getSession().selection.on('changeCursor', function(e) {
+				var pos = editor.getCursorPosition();
+				that.cursorRow = pos.row;
+				that.cursorColumn = pos.column;
 			});
 		}
 
@@ -172,7 +167,7 @@
     			xhr.onreadystatechange = function() {
         			if (xhr.readyState == XMLHttpRequest.DONE) {
            				if(xhr.status == 200){
-               				editor.setValue(xhr.response); 
+               				editor.setValue(xhr.response);
            				}
         			}
     			}
@@ -227,16 +222,6 @@
 
 			toggleDrawer: function() {
 				this.$.drawer.togglePanel();
-			},
-
-			autocomplete: function(e) {
-				var candidate = e.target.innerText;
-				autocomplete.close();
-				editor.getSession().getDocument().insert(editor.getCursorPosition(), candidate);
-			},
-
-			closeAutocomplete: function() {
-				this.$.autocomplete.style.visibility = 'hidden';
 			},
 
 			resizeEditor: function(e) {

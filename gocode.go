@@ -2,12 +2,23 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os/exec"
 	"strings"
 )
 
-func autoComplete(file []byte, offset string) []string {
-	cmd := exec.Command("C:\\wrk\\bin\\gocode.exe", "autocomplete", "c"+offset)
+type AutocompleteResponse struct {
+	Candidates []*Candidate
+}
+
+type Candidate struct {
+	Caption string `json:"caption"`
+	Snippet string `json:"snippet"`
+	Meta    string `json:"meta"`
+}
+
+func autoComplete(file []byte, offset string) *AutocompleteResponse {
+	cmd := exec.Command(goPath, "-f=json", "autocomplete", "c"+offset)
 
 	cmd.Stdin = bytes.NewReader(file)
 
@@ -19,5 +30,29 @@ func autoComplete(file []byte, offset string) []string {
 		logger.Fatal(err)
 	}
 
-	return strings.Split(string(out.Bytes()), "\n")
+	result := &AutocompleteResponse{}
+
+	buf := out.Bytes()
+
+	var v []interface{}
+	json.Unmarshal(buf, &v)
+	candidates := v[1].([]interface{})
+
+	for _, gc := range candidates {
+		m := gc.(map[string]interface{})
+		c := &Candidate{}
+
+		c.Meta = m["class"].(string)
+		c.Caption = m["name"].(string)
+		c.Snippet = m["name"].(string)
+		typ := m["type"].(string)
+
+		if strings.HasPrefix(typ, c.Meta) {
+			c.Caption = c.Snippet + strings.TrimPrefix(typ, c.Meta)
+		}
+
+		result.Candidates = append(result.Candidates, c)
+	}
+
+	return result
 }
