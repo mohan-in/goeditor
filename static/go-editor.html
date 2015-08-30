@@ -14,6 +14,8 @@
 <script src="/static/ace-builds/src-noconflict/ace.js"></script>
 <script src="/static/ace-builds/src-noconflict/ext-language_tools.js"></script>
 
+<script src="/static/ajax.js"></script>
+
 <dom-module id="go-editor">
 
 	<style is="custom-style">
@@ -54,7 +56,7 @@
 					<paper-toolbar>
 						<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
 						<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
-						<paper-icon-button icon="refresh"></paper-icon-button>
+						<paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
 						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
 						<span/></span>
 						<div class="title">Go Editor</div>
@@ -103,23 +105,20 @@
 				getCompletions: function(editor, session, pos, prefix, callback) {
 					var offset = editor.getSession().getDocument().positionToIndex(pos,  0) + 1;
 
-					var xhr = new XMLHttpRequest();
-					xhr.onreadystatechange = function() {
-    					if (xhr.readyState == XMLHttpRequest.DONE) {
-       						if(xhr.status == 200){
-           						callback(null, JSON.parse(xhr.response).Candidates)
-       						} else {
-       							alert('unable to autocomplete');
-       						}
-    					}
-					}
-
-					var data = new FormData();
-					data.append('content', editor.getValue());
-					data.append('offset', offset);
-
-					xhr.open('POST', '/autocomplete');
-					xhr.send(data);
+					ajax({
+						method: 'POST',
+						url: '/autocomplete',
+						data: {
+							offset: offset,
+							content: editor.getValue()
+						},
+						success: function(response) {
+							callback(null, JSON.parse(response).Candidates);
+						},
+						error: function() {
+							alert('error in autocomplete');
+						}
+					});
 				}
 			}
 
@@ -130,6 +129,16 @@
 				var pos = editor.getCursorPosition();
 				that.cursorRow = pos.row;
 				that.cursorColumn = pos.column;
+			});
+		}
+
+		function loadCodePage(fileName) {
+			ajax({
+				method: 'POST',
+				url: fileName,
+				success: function(response) {
+					editor.setValue(response);
+				}
 			});
 		}
 
@@ -153,28 +162,16 @@
 				initEditor(this);
 
 				//load code page
-				var xhr = new XMLHttpRequest();
-    			xhr.onreadystatechange = function() {
-        			if (xhr.readyState == XMLHttpRequest.DONE) {
-           				if(xhr.status == 200){
-               				editor.setValue(xhr.response);
-           				}
-        			}
-    			}
-				xhr.open('POST', this.fileName);
-				xhr.send();
+				loadCodePage(this.fileName);
 
 				//load sidebar
-				var dirXhr = new XMLHttpRequest();
-    			dirXhr.onreadystatechange = function() {
-        			if (dirXhr.readyState == XMLHttpRequest.DONE) {
-           				if(dirXhr.status == 200){
-               				that.directory = JSON.parse(dirXhr.response);
-           				}
-        			}
-    			}
-				dirXhr.open('GET', '/dir');
-				dirXhr.send();
+				ajax({
+					method: 'GET',
+					url: '/dir',
+					success: function(response) {
+						that.directory = JSON.parse(response);
+					}
+				});
 
 				//focus the editor
 				editor.focus();
@@ -182,23 +179,24 @@
 
 			save: function() {
 				var that = this;
-				var xhr = new XMLHttpRequest();
-    			xhr.onreadystatechange = function() {
-        			if (xhr.readyState == XMLHttpRequest.DONE) {
-           				if(xhr.status == 200){
-               				that.$.fileSavedToast.show();
-           				} else {
-           					alert('error saving file');
-           				}
-        			}
-    			}
+				ajax({
+					method: 'POST',
+					url: '/save',
+					data: {
+						name: that.fileName,
+						content: editor.getValue()
+					},
+					success: function(response) {
+						that.$.fileSavedToast.show();
+					},
+					error: function() {
+						alert('error saving file');
+					}
+				});
+			},
 
-    			var data = new FormData();
-    			data.append('name', this.fileName);
-				data.append('content', editor.getValue());
-
-				xhr.open('POST', '/save');
-				xhr.send(data);
+			refresh: function() {
+				loadCodePage(this.fileName);
 			},
 
 			createNewFile: function() {
