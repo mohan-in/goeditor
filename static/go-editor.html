@@ -20,7 +20,7 @@
 
 	<style is="custom-style">
 		#content {
-			font-size: 15px;
+			font-size: 14px;
 			transition-duration: 400ms;
 			transition-timing-function: ease-out;
 		}
@@ -46,9 +46,12 @@
 
 				<paper-header-panel id="drawer" drawer>
 					<paper-toolbar>
+						<paper-icon-button icon="refresh" on-click="refreshSidebar"></paper-icon-button>
+						<paper-icon-button icon="expand-more" on-click="expandSidebar"></paper-icon-button>
+						<paper-icon-button icon="expand-less" on-click="collapseSidebar"></paper-icon-button>
 					</paper-toolbar>
     				<div class="fit">
-    					<tree-view data="[[directory]]"></tree-view>
+    					<tree-view id="sidebar" data="[[directory]]"></tree-view>
     				</div>
 				</paper-header-panel>
 
@@ -56,7 +59,7 @@
 					<paper-toolbar>
 						<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
 						<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
-						<paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
+						<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
 						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
 						<span/></span>
 						<div class="title">Go Editor</div>
@@ -94,10 +97,10 @@
 			editor.getSession().setMode("ace/mode/golang");
 			editor.getSession().setTabSize(4);
 
-			// enable autocompletion and snippets
+			// enable autocompletion
 			editor.setOptions({
 				enableBasicAutocompletion: true,
-				enableSnippets: true,
+				enableSnippets: false,
 				enableLiveAutocompletion: false
 			});
 			
@@ -124,7 +127,7 @@
 
 			editor.completers = [gocodeCompleter]
 
-			//track cursor position to be printed on toolbar
+			//track cursor position to be displayed on toolbar
 			editor.getSession().selection.on('changeCursor', function(e) {
 				var pos = editor.getCursorPosition();
 				that.cursorRow = pos.row;
@@ -138,6 +141,18 @@
 				url: fileName,
 				success: function(response) {
 					editor.setValue(response);
+					editor.clearSelection();
+					editor.moveCursorToPosition({row: 0 , column: 0});
+				}
+			});
+		}
+
+		function loadSidebar(that) {
+			ajax({
+				method: 'GET',
+				url: '/dir',
+				success: function(response) {
+					that.directory = JSON.parse(response);
 				}
 			});
 		}
@@ -165,13 +180,7 @@
 				loadCodePage(this.fileName);
 
 				//load sidebar
-				ajax({
-					method: 'GET',
-					url: '/dir',
-					success: function(response) {
-						that.directory = JSON.parse(response);
-					}
-				});
+				loadSidebar(this);
 
 				//focus the editor
 				editor.focus();
@@ -195,8 +204,12 @@
 				});
 			},
 
-			refresh: function() {
+			refreshCodePage: function() {
 				loadCodePage(this.fileName);
+			},
+
+			refreshSidebar: function() {
+				loadSidebar(this);
 			},
 
 			createNewFile: function() {
@@ -218,6 +231,14 @@
 				} else {
 					this.$.content.style.marginLeft = '0';
 				}
+			},
+
+			expandSidebar: function() {
+				this.$.sidebar.open();
+			},
+
+			collapseSidebar: function() {
+				this.$.sidebar.close();
 			}
 		});	
 	</script>

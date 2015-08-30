@@ -32,7 +32,7 @@
 				</template>
 
 				<template is="dom-repeat" items="[[data.Dirs]]">
-					<tree-view data="[[item]]"></tree-view>
+					<tree-view class="childtree" data="[[item]]"></tree-view>
 				</template>
 			</iron-collapse>
 		</div>
@@ -42,6 +42,12 @@
 		Polymer({
 			toggle: function() {
 				this.$.collapse.toggle();
+			},
+			open: function() {
+				this.$.collapse.opened = true;
+			},
+			close: function() {
+				this.$.collapse.opened = false;
 			}
 		});
 	</script>
