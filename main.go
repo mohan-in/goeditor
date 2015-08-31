@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,9 +9,10 @@ import (
 )
 
 var (
-	logger     *log.Logger
-	goPath     = "C:/wrk"
-	gocodePath = "C:/wrk/bin/gocode.exe"
+	logger      *log.Logger
+	goPath      = "C:/wrk"
+	gocodePath  = "C:/wrk/bin/gocode.exe"
+	projectPath = goPath + "/src/github.com/gocode"
 )
 
 func init() {
@@ -28,11 +28,11 @@ func homeHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func dirHandler(rw http.ResponseWriter, r *http.Request) {
-	dir := ReadDir(goPath + "/src/github.com/gocode")
+	dir := ReadDir(projectPath)
 
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(dir); err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 	}
 }
 
@@ -70,12 +70,35 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 	rw.Write(buf)
 }
 
+func initHandler(rw http.ResponseWriter, r *http.Request) {
+	type response struct {
+		GoPath      string `json:"gopath"`
+		GocodePath  string `json:"gocodePath"`
+		ProjectPath string `json:"projectPath"`
+	}
+
+	resp := &response{GoPath: goPath, GocodePath: gocodePath, ProjectPath: projectPath}
+
+	enc := json.NewEncoder(rw)
+	if err := enc.Encode(resp); err != nil {
+		logger.Println(err)
+	}
+}
+
+func saveSettingsHandler(rw http.ResponseWriter, req *http.Request) {
+	goPath = req.FormValue("gopath")
+	gocodePath = req.FormValue("gocodePath")
+	projectPath = req.FormValue("projectPath")
+}
+
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/dir", dirHandler)
 	http.HandleFunc("/static/", staticFilesHandler)
 	http.HandleFunc("/src/", goFileHandler)
 	http.HandleFunc("/save", saveHandler)
+	http.HandleFunc("/saveSettings", saveSettingsHandler)
+	http.HandleFunc("/init", initHandler)
 	http.HandleFunc("/autocomplete", autocompleteHandler)
 	http.ListenAndServe(":9090", nil)
 }

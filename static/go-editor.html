@@ -5,9 +5,12 @@
 <link rel="import" href="/static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="/static/bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/static/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="/static/bower_components/paper-input/paper-input.html">
 <link rel="import" href="/static/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/static/bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="/static/bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="/static/bower_components/paper-radio-button/paper-radio-button.html">
 
 <link rel="import" href="/static/tree-view.html">
 
@@ -37,6 +40,10 @@
 		paper-toast {
 			margin-left: 50px;
 		}
+
+		#settingsDialog {
+			width: 500px;
+		}
 	}
 	</style>
 
@@ -61,6 +68,7 @@
 						<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
 						<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
 						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
+						<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
 						<span/></span>
 						<div class="title">Go Editor</div>
 						<span>[[cursorRow]]</span>
@@ -79,6 +87,27 @@
 						</div>
 					</paper-dialog>
 
+					<paper-dialog id="settingsDialog">
+						<h2>Settings</h2>
+						<paper-dialog-scrollable>
+							<div>Language:</div>
+							<paper-radio-group selected="{{language}}">
+								<paper-radio-button checked name="golang">Go</paper-radio-button>
+								<paper-radio-button name="html">HTML</paper-radio-button>
+								<paper-radio-button name="javascript">Javascript</paper-radio-button>
+								<paper-radio-button name="css">CSS</paper-radio-button>
+							</paper-radio-group>
+							<paper-input label="GOPATH:" autofocus value="{{gopath}}"></paper-input>
+							<paper-input label="Project Path:" autofocus value="{{projectPath}}"></paper-input>
+							<paper-input label="Path to gocode binary:" autofocus value="{{gocodePath}}"></paper-input>
+						</paper-dialog-scrollable>
+						<br/>
+						<div class="buttons">
+							<paper-button dialog-dismiss>Cancel</paper-button>
+							<paper-button dialog-confirm autofocus on-click="saveSettings">OK</paper-button>
+						</div>
+					</paper-dialog>	
+
 					<paper-toast id="fileSavedToast" text="File Saved Successfully"></paper-toast>
 				</paper-header-panel>
 
@@ -91,10 +120,10 @@
 
 		function initEditor(that) {
 			//setup editor
-			var langTools = ace.require("ace/ext/language_tools");
+			var langTools = ace.require('ace/ext/language_tools');
 			editor = ace.edit(that.$.content);
-			editor.setTheme("ace/theme/chrome");
-			editor.getSession().setMode("ace/mode/golang");
+			editor.setTheme('ace/theme/chrome');
+			editor.getSession().setMode('ace/mode/golang');
 			editor.getSession().setTabSize(4);
 
 			// enable autocompletion
@@ -133,6 +162,17 @@
 				that.cursorRow = pos.row;
 				that.cursorColumn = pos.column;
 			});
+
+			ajax({
+				method: 'GET',
+				url: '/init',
+				success: function(response) {
+					var jsonResponse = JSON.parse(response);
+					that.gopath = jsonResponse.gopath;
+					that.projectPath = jsonResponse.projectPath;
+					that.gocodePath = jsonResponse.gocodePath;
+				}
+			});
 		}
 
 		function loadCodePage(fileName) {
@@ -160,6 +200,10 @@
 		Polymer({
 			properties: {
 				fileName: String,
+				gopath: String,
+				gocodePath: String,
+				projectPath: String,
+				language: String,
 				cursorRow: Number,
 				cursorColumn: Number,
 				autocompleteCandidates: Array,
@@ -172,7 +216,7 @@
 				this.fileName = document.location.pathname;
 				if(this.fileName == '/') {
 					return;
-				} 
+				}
 
 				initEditor(this);
 
@@ -239,6 +283,27 @@
 
 			collapseSidebar: function() {
 				this.$.sidebar.close();
+			},
+
+			openSettingsDialog: function() {
+				this.$.settingsDialog.open();
+			},
+
+			saveSettings: function() {
+				editor.getSession().setMode('ace/mode/' + this.language);
+				ajax({
+					method: 'POST',
+					url: '/saveSettings',
+					data: {
+						gopath: this.gopath,
+						projectPath: this.projectPath,
+						gocodePath: this.gocodePath
+					},
+					success: function() {},
+					error: function(response) {
+						alert('unable to save settings');
+					}
+				});
 			}
 		});	
 	</script>
