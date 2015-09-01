@@ -14,8 +14,8 @@
 
 <link rel="import" href="/static/tree-view.html">
 
-<script src="/static/ace-builds/src-noconflict/ace.js"></script>
-<script src="/static/ace-builds/src-noconflict/ext-language_tools.js"></script>
+<script src="/static/bower_components/ace-builds/src-min-noconflict/ace.js"></script>
+<script src="/static/bower_components/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
 
 <script src="/static/ajax.js"></script>
 
@@ -94,12 +94,12 @@
 							<paper-radio-group selected="{{language}}">
 								<paper-radio-button checked name="golang">Go</paper-radio-button>
 								<paper-radio-button name="html">HTML</paper-radio-button>
-								<paper-radio-button name="javascript">Javascript</paper-radio-button>
+								<paper-radio-button name="javascript">JavaScript</paper-radio-button>
 								<paper-radio-button name="css">CSS</paper-radio-button>
 							</paper-radio-group>
 							<paper-input label="GOPATH:" autofocus value="{{gopath}}"></paper-input>
-							<paper-input label="Project Path:" autofocus value="{{projectPath}}"></paper-input>
-							<paper-input label="Path to gocode binary:" autofocus value="{{gocodePath}}"></paper-input>
+							<paper-input label="Project Path:" value="{{projectPath}}"></paper-input>
+							<paper-input label="Path to gocode binary:" value="{{gocodePath}}"></paper-input>
 						</paper-dialog-scrollable>
 						<br/>
 						<div class="buttons">
@@ -291,6 +291,7 @@
 
 			saveSettings: function() {
 				editor.getSession().setMode('ace/mode/' + this.language);
+				loadSidebar(this);
 				ajax({
 					method: 'POST',
 					url: '/saveSettings',
