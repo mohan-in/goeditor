@@ -16,6 +16,7 @@
 
 <script src="/static/bower_components/ace-builds/src-min-noconflict/ace.js"></script>
 <script src="/static/bower_components/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+<script src="/static/bower_components/ace-builds/src-min-noconflict/ext-statusbar.js"></script>
 
 <script src="/static/ajax.js"></script>
 
@@ -23,9 +24,13 @@
 
 	<style is="custom-style">
 		#content {
-			font-size: 14px;
 			transition-duration: 400ms;
 			transition-timing-function: ease-out;
+		}
+
+		#editor {
+			font-size: 14px;
+			height: 97%;
 		}
 
 		paper-button {
@@ -71,12 +76,12 @@
 						<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
 						<span/></span>
 						<div class="title">Go Editor</div>
-						<span>[[cursorRow]]</span>
-						<span>:</span>
-						<span>[[cursorColumn]]</span>
 					</paper-toolbar>
 
-					<div id="content" class="fit"></div>
+					<div id="content" class="fit">
+						<div id="editor"></div>
+						<div id="statusbar">[[autocompleteEntry]]</div>
+					</div>
 
 					<paper-dialog id="fileNameInput">
 						<div>
@@ -121,7 +126,7 @@
 		function initEditor(that) {
 			//setup editor
 			var langTools = ace.require('ace/ext/language_tools');
-			editor = ace.edit(that.$.content);
+			editor = ace.edit(that.$.editor);
 			editor.setTheme('ace/theme/chrome');
 			editor.getSession().setMode('ace/mode/golang');
 			editor.getSession().setTabSize(4);
@@ -156,12 +161,8 @@
 
 			editor.completers = [gocodeCompleter]
 
-			//track cursor position to be displayed on toolbar
-			editor.getSession().selection.on('changeCursor', function(e) {
-				var pos = editor.getCursorPosition();
-				that.cursorRow = pos.row;
-				that.cursorColumn = pos.column;
-			});
+			var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
+			var statusBar = new StatusBar(editor, that.$.statusbar);
 
 			ajax({
 				method: 'GET',
@@ -204,9 +205,8 @@
 				gocodePath: String,
 				projectPath: String,
 				language: String,
-				cursorRow: Number,
-				cursorColumn: Number,
 				autocompleteCandidates: Array,
+				autocompleteEntry: String,
 				directory: Object
 			},
 
