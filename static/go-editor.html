@@ -211,20 +211,18 @@
 			},
 
 			ready: function() {
-				var that = this;
+				//load sidebar
+				loadSidebar(this);
+
+				initEditor(this);
 
 				this.fileName = document.location.pathname;
 				if(this.fileName == '/') {
 					return;
 				}
 
-				initEditor(this);
-
 				//load code page
 				loadCodePage(this.fileName);
-
-				//load sidebar
-				loadSidebar(this);
 
 				//focus the editor
 				editor.focus();

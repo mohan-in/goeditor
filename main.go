@@ -10,8 +10,8 @@ import (
 
 var (
 	logger      *log.Logger
-	goPath      = "C:/wrk"
-	gocodePath  = "C:/wrk/bin/gocode.exe"
+	goPath      = os.Getenv("GOPATH")
+	gocodePath  = goPath + "/bin/gocode"
 	projectPath = goPath + "/src/github.com/gocode"
 )
 
