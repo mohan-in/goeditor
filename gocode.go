@@ -17,10 +17,8 @@ type Candidate struct {
 	Meta    string `json:"meta"`
 }
 
-func autoComplete(file []byte, offset string) *AutocompleteResponse {
-	cmd := exec.Command(gocodePath, "-f=json", "autocomplete", "c"+offset)
-
-	cmd.Stdin = bytes.NewReader(file)
+func autoComplete(fileName string, content []byte, offset string) *AutocompleteResponse {
+	cmd := exec.Command(gocodePath, "-f=json", "--in="+goPath+fileName, "autocomplete", goPath+fileName, "c"+offset)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -55,8 +53,8 @@ func autoComplete(file []byte, offset string) *AutocompleteResponse {
 		if strings.HasPrefix(typ, c.Meta) {
 			c.Caption = c.Snippet + strings.TrimPrefix(typ, c.Meta)
 		}
-
-		result.Candidates = append(result.Candidates, c)
+		strings.
+			result.Candidates = append(result.Candidates, c)
 	}
 
 	return result

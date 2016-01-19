@@ -45,93 +45,85 @@
 		paper-toast {
 			margin-left: 50px;
 		}
-
-		#settingsDialog {
-			width: 500px;
-		}
 	}
 	</style>
 
 	<template>
-		<div id="container" fullbleed layout vertical>
-			<paper-drawer-panel force-narrow id="drawer" on-iron-select="resizeEditor">
+		<paper-drawer-panel force-narrow id="drawer" on-iron-select="resizeEditor">
 
-				<paper-header-panel id="drawer" drawer>
-					<paper-toolbar>
-						<paper-icon-button icon="refresh" on-click="refreshSidebar"></paper-icon-button>
-						<paper-icon-button icon="expand-more" on-click="expandSidebar"></paper-icon-button>
-						<paper-icon-button icon="expand-less" on-click="collapseSidebar"></paper-icon-button>
-					</paper-toolbar>
-    				<div class="fit">
-    					<tree-view id="sidebar" data="[[directory]]"></tree-view>
-    				</div>
-				</paper-header-panel>
+			<paper-header-panel id="drawer" drawer>
+				<paper-toolbar>
+					<paper-icon-button icon="refresh" on-click="refreshSidebar"></paper-icon-button>
+					<paper-icon-button icon="expand-more" on-click="expandSidebar"></paper-icon-button>
+					<paper-icon-button icon="expand-less" on-click="collapseSidebar"></paper-icon-button>
+				</paper-toolbar>
+				<div class="fit">
+					<tree-view id="sidebar" data="[[directory]]"></tree-view>
+				</div>
+			</paper-header-panel>
 
-				<paper-header-panel main>
-					<paper-toolbar>
-						<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
-						<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
-						<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
-						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
-						<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
-						<span/></span>
-						<div class="title">Go Editor</div>
-					</paper-toolbar>
+			<paper-header-panel main>
+				<paper-toolbar>
+					<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
+					<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
+					<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
+					<paper-icon-button icon="save" on-click="save"></paper-icon-button>
+					<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
+					<span/></span>
+					<div class="title">Go Editor</div>
+				</paper-toolbar>
 
-					<div id="content" class="fit">
-						<div id="editor"></div>
-						<div id="statusbar">[[autocompleteEntry]]</div>
+				<div id="content" class="fit">
+					<div id="editor"></div>
+					<div id="statusbar"></div>
+				</div>
+
+				<paper-dialog id="fileNameInput">
+					<div>
+						<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
 					</div>
+					<div class="buttons">
+						<paper-button dialog-confirm on-click="setFileName">OK</paper-button>
+					</div>
+				</paper-dialog>
 
-					<paper-dialog id="fileNameInput">
-						<div>
-							<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
-						</div>
-						<div class="buttons">
-							<paper-button dialog-confirm on-click="setFileName">OK</paper-button>
-						</div>
-					</paper-dialog>
+				<paper-dialog id="settingsDialog">
+					<h2>Settings</h2>
+					<paper-dialog-scrollable>
+						<div>Language:</div>
+						<paper-radio-group selected="{{language}}">
+							<paper-radio-button checked name="golang">Go</paper-radio-button>
+							<paper-radio-button name="html">HTML</paper-radio-button>
+							<paper-radio-button name="javascript">JavaScript</paper-radio-button>
+							<paper-radio-button name="css">CSS</paper-radio-button>
+						</paper-radio-group>
+						<paper-input label="GOPATH:" autofocus value="{{gopath}}"></paper-input>
+						<paper-input label="Project Path:" value="{{projectPath}}"></paper-input>
+						<paper-input label="Path to gocode binary:" value="{{gocodePath}}"></paper-input>
+					</paper-dialog-scrollable>
+					<br/>
+					<div class="buttons">
+						<paper-button dialog-dismiss>Cancel</paper-button>
+						<paper-button dialog-confirm autofocus on-click="saveSettings">OK</paper-button>
+					</div>
+				</paper-dialog>	
 
-					<paper-dialog id="settingsDialog">
-						<h2>Settings</h2>
-						<paper-dialog-scrollable>
-							<div>Language:</div>
-							<paper-radio-group selected="{{language}}">
-								<paper-radio-button checked name="golang">Go</paper-radio-button>
-								<paper-radio-button name="html">HTML</paper-radio-button>
-								<paper-radio-button name="javascript">JavaScript</paper-radio-button>
-								<paper-radio-button name="css">CSS</paper-radio-button>
-							</paper-radio-group>
-							<paper-input label="GOPATH:" autofocus value="{{gopath}}"></paper-input>
-							<paper-input label="Project Path:" value="{{projectPath}}"></paper-input>
-							<paper-input label="Path to gocode binary:" value="{{gocodePath}}"></paper-input>
-						</paper-dialog-scrollable>
-						<br/>
-						<div class="buttons">
-							<paper-button dialog-dismiss>Cancel</paper-button>
-							<paper-button dialog-confirm autofocus on-click="saveSettings">OK</paper-button>
-						</div>
-					</paper-dialog>	
-
-					<paper-toast id="fileSavedToast" text="File Saved Successfully"></paper-toast>
-				</paper-header-panel>
-
-			</paper-drawer-panel>
-		</div>
+				<paper-toast id="fileSavedToast" text="File Saved Successfully"></paper-toast>
+			</paper-header-panel>
+		</paper-drawer-panel>
 	</template>
 
 	<script>
 		var editor;
 
 		function initEditor(that) {
-			//setup editor
 			var langTools = ace.require('ace/ext/language_tools');
 			editor = ace.edit(that.$.editor);
 			editor.setTheme('ace/theme/chrome');
 			editor.getSession().setMode('ace/mode/golang');
 			editor.getSession().setTabSize(4);
+			editor.setShowPrintMargin(false);
 
-			// enable autocompletion
 			editor.setOptions({
 				enableBasicAutocompletion: true,
 				enableSnippets: false,
@@ -140,12 +132,13 @@
 			
 			var gocodeCompleter = {
 				getCompletions: function(editor, session, pos, prefix, callback) {
-					var offset = editor.getSession().getDocument().positionToIndex(pos,  0) + 1;
+					var offset = editor.getSession().getDocument().positionToIndex(pos,  0);
 
 					ajax({
 						method: 'POST',
 						url: '/autocomplete',
 						data: {
+							name: that.fileName,
 							offset: offset,
 							content: editor.getValue()
 						},
@@ -194,6 +187,7 @@
 				url: '/dir',
 				success: function(response) {
 					that.directory = JSON.parse(response);
+					that.$.sidebar.open();  //open the first level directory
 				}
 			});
 		}
@@ -211,7 +205,6 @@
 			},
 
 			ready: function() {
-				//load sidebar
 				loadSidebar(this);
 
 				initEditor(this);
@@ -221,10 +214,8 @@
 					return;
 				}
 
-				//load code page
 				loadCodePage(this.fileName);
 
-				//focus the editor
 				editor.focus();
 			},
 

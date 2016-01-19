@@ -61,10 +61,16 @@ func saveHandler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
+	name := req.FormValue("name")
 	content := req.FormValue("content")
 	offset := req.FormValue("offset")
 
-	result := autoComplete([]byte(content), offset)
+	err := ioutil.WriteFile(goPath+name, []byte(content), os.ModePerm)
+	if err != nil {
+		logger.Println(err)
+	}
+
+	result := autoComplete(name, []byte(content), offset)
 
 	buf, _ := json.Marshal(result)
 	rw.Write(buf)
