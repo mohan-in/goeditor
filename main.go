@@ -33,6 +33,7 @@ func dirHandler(rw http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(dir); err != nil {
 		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
@@ -42,6 +43,7 @@ func goFileHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			logger.Println(err)
 			rw.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		rw.Write(buf)
@@ -54,10 +56,32 @@ func saveHandler(rw http.ResponseWriter, req *http.Request) {
 	name := req.FormValue("name")
 	content := req.FormValue("content")
 
-	err := ioutil.WriteFile(goPath+name, []byte(content), os.ModePerm)
+	formatedContent, err := formatSource([]byte(content))
 	if err != nil {
 		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	err = ioutil.WriteFile(goPath+name, formatedContent, os.ModePerm)
+	if err != nil {
+		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
+
+	rw.Write(formatedContent)
+}
+
+func formatHandler(rw http.ResponseWriter, req *http.Request) {
+	content := req.FormValue("content")
+
+	result, err := formatSource([]byte(content))
+	if err != nil {
+		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	rw.Write(result)
 }
 
 func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
@@ -68,6 +92,8 @@ func autocompleteHandler(rw http.ResponseWriter, req *http.Request) {
 	err := ioutil.WriteFile(goPath+name, []byte(content), os.ModePerm)
 	if err != nil {
 		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	result := autoComplete(name, []byte(content), offset)
@@ -88,6 +114,7 @@ func initHandler(rw http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(rw)
 	if err := enc.Encode(resp); err != nil {
 		logger.Println(err)
+		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
@@ -103,6 +130,7 @@ func main() {
 	http.HandleFunc("/static/", staticFilesHandler)
 	http.HandleFunc("/src/", goFileHandler)
 	http.HandleFunc("/save", saveHandler)
+	http.HandleFunc("/format", formatHandler)
 	http.HandleFunc("/saveSettings", saveSettingsHandler)
 	http.HandleFunc("/init", initHandler)
 	http.HandleFunc("/autocomplete", autocompleteHandler)

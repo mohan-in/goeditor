@@ -30,10 +30,8 @@ func autoComplete(fileName string, content []byte, offset string) *AutocompleteR
 
 	result := &AutocompleteResponse{}
 
-	buf := out.Bytes()
-
 	var v []interface{}
-	json.Unmarshal(buf, &v)
+	json.Unmarshal(out.Bytes(), &v)
 
 	if len(v) == 0 {
 		return nil
@@ -53,8 +51,8 @@ func autoComplete(fileName string, content []byte, offset string) *AutocompleteR
 		if strings.HasPrefix(typ, c.Meta) {
 			c.Caption = c.Snippet + strings.TrimPrefix(typ, c.Meta)
 		}
-		strings.
-			result.Candidates = append(result.Candidates, c)
+
+		result.Candidates = append(result.Candidates, c)
 	}
 
 	return result

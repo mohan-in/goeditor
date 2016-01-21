@@ -18,7 +18,7 @@ type File struct {
 	Path string
 }
 
-var ignoreDirs = []string{".git", "bower_components", "ace-builds", ".files"}
+var ignoreDirs = []string{"bower_components", ".git", ".gitignore", "LICENSE", "README.md"}
 
 func ReadDir(name string) Dir {
 	p := strings.Split(name, "/")
