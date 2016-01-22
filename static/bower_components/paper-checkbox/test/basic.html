@@ -15,13 +15,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-checkbox.html">
-
 </head>
+<style is="custom-style">
+  paper-checkbox.giant {
+    --paper-checkbox-size: 50px;
+  }
+  paper-checkbox.tiny {
+    --paper-checkbox-size: 5px;
+  }
+</style>
 <body>
 
   <test-fixture id="NoLabel">
@@ -39,6 +44,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="AriaLabel">
     <template>
       <paper-checkbox id="check3" aria-label="Batman">Robin</paper-checkbox>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="WithDifferentSizes">
+    <template>
+      <paper-checkbox></paper-checkbox>
+      <paper-checkbox class="giant"></paper-checkbox>
+      <paper-checkbox class="tiny"></paper-checkbox>
     </template>
   </test-fixture>
 
@@ -97,14 +110,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(c1.validate());
       });
 
-      test('checkbox label can be updated', function() {
-        Polymer.dom(c1).textContent = 'Batman';
-        c1.updateAriaLabel();
-        assert.isTrue(c1.getAttribute('aria-label') == 'Batman');
+      test('checkbox can check sizes', function() {
+        var c2 = fixture('WithDifferentSizes');
+        var normal = c2[0].getBoundingClientRect();
+        var giant = c2[1].getBoundingClientRect();
+        var tiny = c2[2].getBoundingClientRect();
 
-        Polymer.dom(c1).textContent = 'Robin';
-        c1.updateAriaLabel();
-        assert.isTrue(c1.getAttribute('aria-label') == 'Robin');
+        assert.isTrue(5 <= tiny.height < normal.height < giant.height <= 50);
+        assert.isTrue(5 <= tiny.width < normal.width < giant.width <= 50);
       });
     });
 
@@ -126,14 +139,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(!c1.getAttribute('aria-label'));
       });
 
-      test('checkbox with a label sets an aria label', function() {
-        assert.isTrue(c2.getAttribute('aria-label') == "Batman");
-      });
-
       test('checkbox respects the user set aria-label', function() {
         var c = fixture('AriaLabel');
         assert.isTrue(c.getAttribute('aria-label') == "Batman");
       });
+
+      a11ySuite('NoLabel');
+      a11ySuite('WithLabel');
+      a11ySuite('AriaLabel');
     });
   </script>
 </body>
