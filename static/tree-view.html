@@ -5,7 +5,7 @@
 
 <dom-module id="tree-view">
 	<style>
-		#child {
+		.child {
 			padding-left: 10px;
 		}
 		iron-icon {
@@ -24,7 +24,7 @@
 	<template>
 		<div class="file" on-click="toggle"><iron-icon icon="folder"></iron-icon>[[data.Name]]</div>
 
-		<div id="child">
+		<div class="child">
 			<iron-collapse id="collapse">
 				<template is="dom-repeat" items="[[data.Files]]">
 					<a class="file" target="_blank" href="[[item.Path]]">
@@ -32,7 +32,7 @@
 				</template>
 
 				<template is="dom-repeat" items="[[data.Dirs]]">
-					<tree-view class="childtree" data="[[item]]"></tree-view>
+					<tree-view data="[[item]]"></tree-view>
 				</template>
 			</iron-collapse>
 		</div>

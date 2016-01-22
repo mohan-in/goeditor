@@ -12,6 +12,7 @@
 <link rel="import" href="/static/bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="/static/bower_components/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="/static/bower_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="/static/bower_components/paper-tooltip/paper-tooltip.html">
 
 <link rel="import" href="/static/tree-view.html">
 
@@ -46,10 +47,6 @@
 		paper-toast {
 			margin-left: 50px;
 		}
-
-		.ace_editor.ace_autocomplete.ace-chrome{
-			width:400px;
-		}
 	}
 	</style>
 
@@ -58,9 +55,18 @@
 
 			<paper-header-panel id="drawer" drawer>
 				<paper-toolbar>
-					<paper-icon-button icon="refresh" on-click="refreshSidebar"></paper-icon-button>
-					<paper-icon-button icon="expand-more" on-click="expandSidebar"></paper-icon-button>
-					<paper-icon-button icon="expand-less" on-click="collapseSidebar"></paper-icon-button>
+					<span>
+						<paper-icon-button icon="refresh" on-click="refreshSidebar"></paper-icon-button>
+						<paper-tooltip>Reload</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="expand-more" on-click="expandSidebar"></paper-icon-button>
+						<paper-tooltip>Expand</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="expand-less" on-click="collapseSidebar"></paper-icon-button>
+						<paper-tooltip>Collapse</paper-tooltip>
+					</span>
 				</paper-toolbar>
 				<div class="fit">
 					<tree-view id="sidebar" data="[[directory]]"></tree-view>
@@ -69,14 +75,31 @@
 
 			<paper-header-panel main>
 				<paper-toolbar>
-					<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
-					<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
-					<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
-					<paper-icon-button icon="editor:format-align-center" on-click="formatCodePage"></paper-icon-button>
-					<paper-icon-button icon="save" on-click="save"></paper-icon-button>
-					<span/></span>
+					<span>
+						<paper-icon-button icon="menu" on-click="toggleDrawer"></paper-icon-button>
+						<paper-tooltip>SideBar</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="add" on-click="createNewFile"></paper-icon-button>
+						<paper-tooltip>Create New File</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="refresh" on-click="refreshCodePage"></paper-icon-button>
+						<paper-tooltip>Reload</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="editor:format-align-center" on-click="formatCodePage"></paper-icon-button>
+						<paper-tooltip>go fmt</paper-tooltip>
+					</span>
+					<span>
+						<paper-icon-button icon="save" on-click="save"></paper-icon-button>
+						<paper-tooltip	>Save</paper-tooltip>
+					</span>
 					<div class="title">Go Editor</div>
-					<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
+					<span>
+						<paper-icon-button icon="settings" on-click="openSettingsDialog"></paper-icon-button>
+						<paper-tooltip>Settings</paper-tooltip>
+					</span>
 				</paper-toolbar>
 
 				<div id="content" class="fit">
@@ -146,6 +169,8 @@
 				}
 
 				this.loadCodePage(this.fileName);
+
+				document.title = this.fileName.substr(this.fileName.lastIndexOf('/') + 1);
 			},
 
 			initEditor: function() {
@@ -162,11 +187,13 @@
 					enableSnippets: false,
 					enableLiveAutocompletion: false
 				});
+
+				var isAutocompletePanelResized = false;
 				
 				var gocodeCompleter = {
 					getCompletions: function(editor, session, pos, prefix, callback) {
 						var offset = editor.getSession().getDocument().positionToIndex(pos,  0);
-						console.log(offset);
+
 						ajax({
 							method: 'POST',
 							url: '/autocomplete',
@@ -177,6 +204,13 @@
 							},
 							success: function(response) {
 								callback(null, JSON.parse(response).Candidates);
+
+								if(!isAutocompletePanelResized){
+									var popup = that.editor.completer.popup;
+									popup.container.style.width='600px';
+									popup.resize();
+									isAutocompletePanelResized = true;
+								}
 							},
 							error: function() {
 								alert('error in autocomplete');
@@ -186,16 +220,6 @@
 				}
 
 				this.editor.completers = [gocodeCompleter]
-
-				/*
-				if (!this.editor.completer) {
-					this.editor.completer = new Autocomplete();
-				}
-				editor.completer.$init();
-				var popup = this.editor.completer.popup; 
-				popup.container.style.width="1000px"; 
-				popup.resize();
-				*/
 
 				var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
 				var statusBar = new StatusBar(this.editor, that.$.statusbar);
@@ -247,11 +271,11 @@
 					method: 'POST',
 					url: '/save',
 					data: {
-						name: that.fileName,
-						content: editor.getValue()
+						name: this.fileName,
+						content: this.editor.getValue()
 					},
 					success: function(response) {
-						editor.setValue(response, -1);
+						that.editor.setValue(response, -1);
 						that.$.fileSavedToast.show();
 					},
 					error: function() {
@@ -271,10 +295,10 @@
 					url: '/format',
 					data: {
 						name: this.fileName,
-						content: editor.getValue()
+						content: this.editor.getValue()
 					},
 					success: function(response) {
-						editor.setValue(response, -1);
+						that.editor.setValue(response, -1);
 					},
 					error: function() {
 						alert('error saving file');
@@ -283,7 +307,7 @@
 			},
 
 			refreshSidebar: function() {
-				loadSidebar(this);
+				this.loadSidebar(this);
 			},
 
 			createNewFile: function() {
@@ -292,7 +316,7 @@
 
 			setFileName: function() {
 				history.pushState(null, null, this.fileName);
-				initEditor();
+				this.initEditor();
 			},
 
 			toggleDrawer: function() {
@@ -320,8 +344,8 @@
 			},
 
 			saveSettings: function() {
-				editor.getSession().setMode('ace/mode/' + this.language);
-				loadSidebar(this);
+				this.editor.getSession().setMode('ace/mode/' + this.language);
+				this.loadSidebar(this);
 				ajax({
 					method: 'POST',
 					url: '/saveSettings',
