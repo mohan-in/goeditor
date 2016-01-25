@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -56,14 +57,20 @@ func saveHandler(rw http.ResponseWriter, req *http.Request) {
 	name := req.FormValue("name")
 	content := req.FormValue("content")
 
-	formatedContent, err := formatSource([]byte(content))
-	if err != nil {
-		logger.Println(err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
+	var formatedContent []byte
+	if strings.HasSuffix(strings.ToLower(name), ".go") {
+		var err error
+		formatedContent, err = formatSource([]byte(content))
+		if err != nil {
+			logger.Println(err)
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		formatedContent = []byte(content)
 	}
 
-	err = ioutil.WriteFile(goPath+name, formatedContent, os.ModePerm)
+	err := ioutil.WriteFile(goPath+name, formatedContent, os.ModePerm)
 	if err != nil {
 		logger.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)

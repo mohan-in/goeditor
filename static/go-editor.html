@@ -165,6 +165,7 @@
 
 				this.fileName = document.location.pathname;
 				if(this.fileName == '/') {
+					document.title = 'untitled';
 					return;
 				}
 
@@ -285,6 +286,9 @@
 			},
 
 			refreshCodePage: function() {
+				if(this.fileName == '/') {
+					return;
+				}
 				this.loadCodePage();
 			},
 
@@ -354,7 +358,6 @@
 						projectPath: this.projectPath,
 						gocodePath: this.gocodePath
 					},
-					success: function() {},
 					error: function(response) {
 						alert('unable to save settings');
 					}
