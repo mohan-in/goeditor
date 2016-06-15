@@ -26,7 +26,7 @@
 		<div class="file" on-click="toggle"><iron-icon icon="folder"></iron-icon>[[data.Name]]</div>
 
 		<div class="child">
-			<iron-collapse id="collapse" opened>
+			<iron-collapse id="collapse">
 				<template is="dom-repeat" items="[[data.Files]]">
 					<a class="file" target="_blank" href="[[item.Path]]">
 						<iron-icon icon="description"></iron-icon>[[item.Name]]</a>

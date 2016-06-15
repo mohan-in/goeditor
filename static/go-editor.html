@@ -33,7 +33,7 @@
 		}
 
 		#editor {
-			height: 97%;
+			height: 91%;
 		}
 
 		paper-button {
@@ -110,7 +110,7 @@
 
 				<paper-dialog id="fileNameInput">
 					<div>
-						<paper-input label="Enter file name:" autofocus value="{{fileName}}"></paper-input></br>
+						<paper-input label="Enter file name:" autofocus value="{{projectPath}}"></paper-input></br>
 					</div>
 					<div class="buttons">
 						<paper-button dialog-dismiss>Cancel</paper-button>
@@ -229,6 +229,10 @@
 				}
 
 				this.editor.completers = [gocodeCompleter]
+				
+				this.$.editor.addEventListener('click', function() {
+                    window.location.hash = that.editor.getCursorPosition().row; 
+				});
 
 				var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
 				var statusBar = new StatusBar(this.editor, that.$.statusbar);
@@ -258,6 +262,7 @@
 					url: this.fileName,
 					success: function(response) {
 						that.editor.setValue(response, -1);
+						that.focusEditor();
 					}
 				});
 			},
@@ -285,6 +290,7 @@
 					},
 					success: function(response) {
 						that.editor.setValue(response, -1);
+						that.focusEditor();
 						that.$.fileSavedToast.show();
 					},
 					error: function() {
@@ -311,6 +317,7 @@
 					},
 					success: function(response) {
 						that.editor.setValue(response, -1);
+						that.focusEditor();
 					},
 					error: function() {
 						alert('error saving file');
@@ -371,6 +378,12 @@
 						alert('unable to save settings');
 					}
 				});
+			},
+			
+			focusEditor: function() {
+			    this.editor.scrollToLine(window.location.hash.substring(1), true, true, function () {});
+				this.editor.gotoLine(window.location.hash.substring(1));
+				this.editor.focus();
 			}
 		});	
 	</script>
